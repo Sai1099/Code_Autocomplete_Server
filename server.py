@@ -7,7 +7,10 @@ from typing import List
 import os
 import json
 import traceback
+import dotenv
+from dotenv import load_dotenv
 
+load_dotenv()
 class my_data(BaseModel):
     data_id : int
     data : List[str]
