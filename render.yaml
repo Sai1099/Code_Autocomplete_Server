@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: fastapi-langchain-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host=0.0.0.0 --port=10000
+    envVars:
+      - key: API_KEY
+        value: your_actual_google_genai_key_here
