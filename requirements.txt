@@ -2,3 +2,4 @@ fastapi
 uvicorn
 langchain-google-genai
 dotenv
+mistralai
