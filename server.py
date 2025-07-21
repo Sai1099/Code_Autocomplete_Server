@@ -102,7 +102,7 @@ async def my_streaming_function(user_input: str):
     response = await client.chat.stream_async(
         model=model,
         messages=[
-            SystemMessage(content="Assume you are a good programmer and I will give you the incomplete code. Now you will give me only the unseen complete code, that's it. Don't respond to anything, just give me the final code. and only give me the line code only the single line code based on the given codes please complete the single code in the line like giving the suggestions like intellij just want a one lune to complete only"),
+            SystemMessage(content="Assume you are a good programmer and I will give you the incomplete code. Now you will give me only the unseen complete code, that's it. Don't respond to anything, just give me the final code. and only give me the line code only the single line code based on the given codes please complete the single code in the line like giving the suggestions like intellij just want a one lune to complete only just respond to the code please give me the unseen code only for thta line only don't give complete code and don't give me any text only code as output"),
             UserMessage(content=user_input),
         ]
     )
