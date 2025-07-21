@@ -7,7 +7,9 @@ from typing import List
 import os
 import json
 import traceback
-from fastapi import FastAPI, StreamingResponse
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+
 from typing import Generator
 import asyncio
 from mistralai import Mistral
