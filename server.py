@@ -7,6 +7,11 @@ from typing import List
 import os
 import json
 import traceback
+from fastapi import FastAPI, StreamingResponse
+from typing import Generator
+import asyncio
+from mistralai import Mistral
+from mistralai.models import UserMessage,SystemMessage
 
 class my_data(BaseModel):
     data_id: int
@@ -85,3 +90,30 @@ async def main_controller(mydata: my_data):
         print(f"Error in main_controller: {e}")
         print(traceback.format_exc())
         return PlainTextResponse(f"Internal server error: {str(e)}", status_code=500)
+    
+
+
+model = "mistral-large-latest"
+client = Mistral(api_key=os.getenv("MIST_API"))
+
+async def my_streaming_function(user_input: str):
+    response = await client.chat.stream_async(
+        model=model,
+        messages=[
+            SystemMessage(content="Assume you are a good programmer and I will give you the incomplete code. Now you will give me only the unseen complete code, that's it. Don't respond to anything, just give me the final code. and only give me the line code only the single line code based on the given codes please complete the single code in the line like giving the suggestions like intellij just want a one lune to complete only"),
+            UserMessage(content=user_input),
+        ]
+    )
+
+    async def event_generator():
+        async for chunk in response:
+            if chunk.data.choices[0].delta.content:
+                yield chunk.data.choices[0].delta.content
+
+    return event_generator()
+
+@app.api_route("/stream", methods=["POST"])
+async def stream_endpoint(request: Request):
+    data = await request.json()
+    user_input = data.get("user_input", "")
+    return StreamingResponse(await my_streaming_function(user_input), media_type="text/plain")
