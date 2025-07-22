@@ -10,11 +10,15 @@ import traceback
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
+import json
+
 from typing import Generator
 import asyncio
 from mistralai import Mistral
 from mistralai.models import UserMessage,SystemMessage
+from dotenv import load_dotenv
 
+load_dotenv()
 class my_data(BaseModel):
     data_id: int
     data: List[str]
@@ -96,7 +100,8 @@ async def main_controller(mydata: my_data):
 
 
 model = "mistral-large-latest"
-client = Mistral(api_key=os.getenv("MIST_API"))
+API_KEY = os.getenv("MIST_API")
+client = Mistral(api_key=API_KEY)
 
 async def my_streaming_function(user_input: str):
     response = await client.chat.stream_async(
@@ -108,8 +113,9 @@ async def my_streaming_function(user_input: str):
 3. If completing a line, provide only what's needed to finish that line
 4. If completing a block, provide the missing lines with correct indentation
 5. Use \\n for new lines when multiple lines are needed
-6. Match the coding style and patterns from the existing code
-7. Do not include any text before or after the code completion"""),
+6. Match the coding style and patterns from the existing code and if the sentence is completed don't respond to anything
+                          
+7. Do not include any text before or after the code completion and give me the json like {"response":""} only don't give any text i just want in this format"""),
             UserMessage(content=user_input),
         ]
     )
@@ -120,9 +126,20 @@ async def my_streaming_function(user_input: str):
                 yield chunk.data.choices[0].delta.content
 
     return event_generator()
-
 @app.api_route("/stream", methods=["POST"])
 async def stream_endpoint(request: Request):
     data = await request.json()
     user_input = data.get("user_input", "")
-    return StreamingResponse(await my_streaming_function(user_input), media_type="text/plain")
+
+    main_json = await my_streaming_function(user_input)
+    content = ""
+    async for chunk in main_json:
+        content += chunk.decode() if isinstance(chunk, bytes) else chunk
+
+    st_idx = content.find("{")
+    ed_idx = content.rfind("}")
+    main_cleaned_json = content[st_idx:ed_idx+1]
+    parsed = json.loads(main_cleaned_json.strip())
+    main_res = parsed["response"]
+
+    return main_res
