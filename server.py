@@ -129,10 +129,12 @@ async def my_streaming_function(user_input: str):
 @app.api_route("/stream", methods=["POST"])
 async def stream_endpoint(request: Request):
     data = await request.json()
+    print(f"Data recieved from the host: {data}")
     user_input = data.get("user_input", "")
 
     main_json = await my_streaming_function(user_input)
     content = ""
+    print(f"this is the response the server given: {main_json}")
     async for chunk in main_json:
         content += chunk.decode() if isinstance(chunk, bytes) else chunk
 
